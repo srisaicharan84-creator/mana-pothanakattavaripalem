@@ -17,6 +17,7 @@ export default function Home() {
           announcements: "Announcements",
           community: "Community",
           getInvolved: "Get Involved",
+          signIn: "Sign In / Admin",
           menuLabel: "Menu",
           closeLabel: "Close",
           welcome: "Welcome to our village",
@@ -131,6 +132,7 @@ export default function Home() {
           announcements: "ప్రకటనలు",
           community: "సమాజం",
           getInvolved: "పాల్గొనండి",
+          signIn: "లాగిన్ / అడ్మిన్",
           menuLabel: "మెనూ",
           closeLabel: "మూసివేయండి",
           welcome: "మన గ్రామానికి స్వాగతం",
@@ -276,7 +278,7 @@ export default function Home() {
             ))}
           </nav>
 
-          {/* Actions: Language Toggle + CTA + Mobile Menu Button */}
+          {/* Actions: Language Toggle + Sign In + CTA + Mobile Menu Button */}
           <div className="flex items-center gap-2.5">
             <button
               type="button"
@@ -286,6 +288,13 @@ export default function Home() {
             >
               {language === "en" ? "తెలుగు" : "English"}
             </button>
+
+            <a
+              href="/login"
+              className="hidden rounded-full border border-[#245c3c] bg-white/80 px-5 py-2.5 text-sm font-semibold text-[#245c3c] transition hover:bg-[#edf3e8] sm:inline-block"
+            >
+              🔐 {t.signIn}
+            </a>
 
             <a
               href="/community"
@@ -321,9 +330,16 @@ export default function Home() {
                 </a>
               ))}
               <a
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="mt-2 rounded-full border border-[#245c3c] px-5 py-2.5 text-center font-semibold text-[#245c3c] transition hover:bg-[#edf3e8] sm:hidden"
+              >
+                🔐 {t.signIn}
+              </a>
+              <a
                 href="/community"
                 onClick={() => setMobileMenuOpen(false)}
-                className="mt-2 rounded-full bg-[#245c3c] px-5 py-2.5 text-center font-semibold text-white transition hover:bg-[#17462c] sm:hidden"
+                className="rounded-full bg-[#245c3c] px-5 py-2.5 text-center font-semibold text-white transition hover:bg-[#17462c] sm:hidden"
               >
                 {t.getInvolved}
               </a>
