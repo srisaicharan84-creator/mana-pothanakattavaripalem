@@ -1,25 +1,43 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
-type StatusFilter = "all" | "ongoing" | "planned" | "completed";
-
-interface ProjectItem {
+interface DevelopmentWork {
   id: string;
-  status: Exclude<StatusFilter, "all">;
   category: string;
-  title: string;
-  location: string;
-  progress: number;
-  fundingSource: string;
-  timeline: string;
-  description: string;
+  status: string;
+  title_en: string;
+  title_te: string;
+  location_en: string;
+  location_te: string;
+  summary_en: string;
+  summary_te: string;
+  budget_text: string | null;
+  progress_percent: number;
+  created_at: string;
 }
 
-export default function DevelopmentPage() {
+export default function DevelopmentTrackerPage() {
   const [language, setLanguage] = useState<"en" | "te">("en");
-  const [selectedStatus, setSelectedStatus] = useState<StatusFilter>("all");
+  const [works, setWorks] = useState<DevelopmentWork[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  useEffect(() => {
+    async function fetchWorks() {
+      const { data, error } = await supabase
+        .from("development_works")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (!error && data) {
+        setWorks(data);
+      }
+      setLoading(false);
+    }
+    fetchWorks();
+  }, []);
 
   const t =
     language === "en"
@@ -27,392 +45,244 @@ export default function DevelopmentPage() {
           siteName: "Mana Pothanakattavaripalem",
           siteSubName: "మన పొతనకట్టవారిపాలెం",
           backHome: "← Back to Home",
-          eyebrow: "Village Development Tracker",
-          pageTitle: "Tracking Progress. Building Together.",
-          pageSubtitle:
-            "Follow ongoing infrastructure works, water and drainage improvements, sanitation initiatives, and planned community projects across Pothanakattavaripalem.",
-
-          // Summary Metrics (All 00 until real works are added)
-          stats: [
-            { label: "Total Works Listed", value: "00", note: "Awaiting verified entries" },
-            { label: "In Progress", value: "00", note: "Active works" },
-            { label: "Planned / Proposed", value: "00", note: "Upcoming" },
-            { label: "Completed", value: "00", note: "Verified finish" },
-          ],
-
-          // Filter Section
-          trackerEyebrow: "Project Ledger",
-          trackerTitle: "Village Works & Progress Updates",
-          trackerNotice:
-            "Verified village works, sanctioned budgets, and field progress photos will be published here once confirmed.",
-
-          filters: [
-            { key: "all" as StatusFilter, label: "All Projects" },
-            { key: "ongoing" as StatusFilter, label: "🚧 In Progress" },
-            { key: "planned" as StatusFilter, label: "🗓️ Planned" },
-            { key: "completed" as StatusFilter, label: "✅ Completed" },
-          ],
-
-          statusLabels: {
-            ongoing: "🚧 In Progress",
-            planned: "🗓️ Planned",
-            completed: "✅ Completed",
-          },
-
+          eyebrow: "Building Together",
+          heading: "Village Development Works",
+          subtitle:
+            "Track ongoing infrastructure, water, sanitation, and community development projects across our village.",
+          filterAll: "All Projects",
+          filterInProgress: "In Progress",
+          filterCompleted: "Completed",
+          filterApproved: "Approved",
+          filterProposed: "Proposed",
+          filterDelayed: "Delayed",
+          loadingText: "Loading village projects...",
+          emptyText: "No development projects found under this filter.",
           progressLabel: "Completion Progress",
-          locationLabel: "Area",
-          fundingLabel: "Funding",
-          timelineLabel: "Timeline",
-
-          emptyTitle: "No development works published yet",
-          emptyDesc:
-            "Once village works are verified with authentic details, they will appear here under their respective status.",
-
-          // Empty list until real village projects are entered
-          projects: [] as ProjectItem[],
-
-          // Focus Areas
-          focusEyebrow: "Priority Sectors",
-          focusTitle: "Core Development Focus Areas",
-          focusSubtitle:
-            "Every project tracked on this page is organized into four practical categories for easy monitoring.",
-          focusAreas: [
-            {
-              icon: "🛣️",
-              title: "Roads & Connectivity",
-              desc: "CC roads, gravel lanes, culvert repairs, and safe village approach paths.",
-            },
-            {
-              icon: "💧",
-              title: "Water & Drainage",
-              desc: "Overhead tanks, drinking water pipelines, borewells, and stormwater drains.",
-            },
-            {
-              icon: "♻️",
-              title: "Sanitation & Lighting",
-              desc: "Streetlight maintenance, cleanliness drives, and village waste management.",
-            },
-            {
-              icon: "🏫",
-              title: "Schools & Public Spaces",
-              desc: "Anganwadi centers, school facilities, temples, and shared community halls.",
-            },
-          ],
-
-          // Footer
-          footerTagline: "Our Village. Our Information. Our Community.",
-          footerNote1: "Independent community information initiative.",
-          footerNote2: "Not an official Gram Panchayat website.",
-          footerCopyright: "© 2026 Mana Pothanakattavaripalem",
+          budgetLabel: "Estimated Budget",
+          locationLabel: "Location",
+          statusLabels: {
+            proposed: "Proposed",
+            approved: "Approved",
+            in_progress: "In Progress",
+            completed: "Completed",
+            delayed: "Delayed",
+          } as Record<string, string>,
         }
       : {
           siteName: "మన పొతనకట్టవారిపాలెం",
           siteSubName: "Mana Pothanakattavaripalem",
-          backHome: "← హోమ్ పేజీకి తిరిగి వెళ్ళండి",
-          eyebrow: "గ్రామ అభివృద్ధి ట్రాకర్",
-          pageTitle: "ప్రగతిని గమనిద్దాం. కలిసి నిర్మిద్దాం.",
-          pageSubtitle:
-            "పొతనకట్టవారిపాలెంలో జరుగుతున్న మౌలిక సదుపాయాల పనులు, తాగునీరు మరియు డ్రైనేజీ మెరుగుదలలు, పారిశుధ్య కార్యక్రమాలు మరియు రాబోయే ప్రాజెక్టుల వివరాలను తెలుసుకోండి.",
-
-          // Summary Metrics
-          stats: [
-            { label: "మొత్తం నమోదైన పనులు", value: "00", note: "ధృవీకరించబడిన వివరాలు త్వరలో" },
-            { label: "ప్రగతిలో ఉన్నవి", value: "00", note: "కొనసాగుతున్న పనులు" },
-            { label: "ప్రతిపాదిత పనులు", value: "00", note: "త్వరలో ప్రారంభం" },
-            { label: "పూర్తయినవి", value: "00", note: "ధృవీకరించబడింది" },
-          ],
-
-          // Filter Section
-          trackerEyebrow: "ప్రాజెక్టుల జాబితా",
-          trackerTitle: "గ్రామ అభివృద్ధి పనులు & పురోగతి",
-          trackerNotice:
-            "ధృవీకరించబడిన గ్రామ అభివృద్ధి పనులు, మంజూరైన నిధులు మరియు క్షేత్రస్థాయి ఫోటోలు నిర్ధారించబడిన తర్వాత ఇక్కడ ప్రచురించబడతాయి.",
-
-          filters: [
-            { key: "all" as StatusFilter, label: "అన్ని పనులు" },
-            { key: "ongoing" as StatusFilter, label: "🚧 ప్రగతిలో ఉన్నవి" },
-            { key: "planned" as StatusFilter, label: "🗓️ ప్రతిపాదిత పనులు" },
-            { key: "completed" as StatusFilter, label: "✅ పూర్తయినవి" },
-          ],
-
-          statusLabels: {
-            ongoing: "🚧 ప్రగతిలో ఉంది",
-            planned: "🗓️ ప్రతిపాదించబడింది",
-            completed: "✅ పూర్తయింది",
-          },
-
+          backHome: "← హోమ్ పేజీకి వెళ్ళండి",
+          eyebrow: "కలిసి నిర్మిద్దాం",
+          heading: "గ్రామ అభివృద్ధి పనులు",
+          subtitle:
+            "మన గ్రామంలో జరుగుతున్న రహదారులు, తాగునీరు, పారిశుధ్యం మరియు మౌలిక సదుపాయాల ప్రాజెక్టుల పురోగతిని తెలుసుకోండి.",
+          filterAll: "అన్ని పనులు",
+          filterInProgress: "జరుగుతున్నవి",
+          filterCompleted: "పూర్తయినవి",
+          filterApproved: "ఆమోదించబడినవి",
+          filterProposed: "ప్రతిపాదించబడినవి",
+          filterDelayed: "ఆలస్యమైనవి",
+          loadingText: "అభివృద్ధి పనుల వివరాలు లోడ్ అవుతున్నాయి...",
+          emptyText: "ఈ విభాగంలో ప్రస్తుతం ఎటువంటి ప్రాజెక్టులు లేవు.",
           progressLabel: "పని పురోగతి",
+          budgetLabel: "అంచనా బడ్జెట్",
           locationLabel: "ప్రాంతం",
-          fundingLabel: "నిధులు",
-          timelineLabel: "దశ",
-
-          emptyTitle: "ఇప్పటివరకు ఎటువంటి అభివృద్ధి పనులు ప్రచురించబడలేదు",
-          emptyDesc:
-            "గ్రామ అభివృద్ధి పనుల వివరాలు ధృవీకరించబడిన తర్వాత అవి వాటి స్థితి ఆధారంగా ఇక్కడ కనిపిస్తాయి.",
-
-          projects: [] as ProjectItem[],
-
-          // Focus Areas
-          focusEyebrow: "ప్రాధాన్యతా రంగాలు",
-          focusTitle: "ప్రధాన అభివృద్ధి విభాగాలు",
-          focusSubtitle:
-            "సులభంగా గమనించడానికి ప్రతి పని నాలుగు ముఖ్య విభాగాలుగా వర్గీకరించబడింది.",
-          focusAreas: [
-            {
-              icon: "🛣️",
-              title: "రహదారులు & రవాణా",
-              desc: "సిసి రోడ్లు, అంతర్గత దారులు, కల్వర్టుల మరమ్మతులు మరియు గ్రామ ప్రధాన రహదారులు.",
-            },
-            {
-              icon: "💧",
-              title: "తాగునీరు & డ్రైనేజీ",
-              desc: "ఓవర్‌హెడ్ ట్యాంకులు, తాగునీటి పైపులైన్లు, బోరుబావులు మరియు మురుగునీటి కాలువలు.",
-            },
-            {
-              icon: "♻️",
-              title: "పారిశుధ్యం & వీధి దీపాలు",
-              desc: "వీధి దీపాల నిర్వహణ, పరిశుభ్రత కార్యక్రమాలు మరియు వ్యర్థాల నిర్వహణ.",
-            },
-            {
-              icon: "🏫",
-              title: "పాఠశాలలు & ప్రజా భవనాలు",
-              desc: "అంగన్‌వాడీ కేంద్రాలు, పాఠశాల వసతులు, ఆలయాలు మరియు సామాజిక భవనాలు.",
-            },
-          ],
-
-          // Footer
-          footerTagline: "మన గ్రామం. మన సమాచారం. మన సమాజం.",
-          footerNote1: "స్వతంత్ర గ్రామ సమాచార వేదిక.",
-          footerNote2: "ఇది అధికారిక గ్రామ పంచాయతీ వెబ్‌సైట్ కాదు.",
-          footerCopyright: "© 2026 మన పొతనకట్టవారిపాలెం",
+          statusLabels: {
+            proposed: "ప్రతిపాదించబడింది",
+            approved: "ఆమోదించబడింది",
+            in_progress: "జరుగుతోంది",
+            completed: "పూర్తయింది",
+            delayed: "ఆలస్యమైంది",
+          } as Record<string, string>,
         };
 
-  const filteredProjects =
-    selectedStatus === "all"
-      ? t.projects
-      : t.projects.filter((project) => project.status === selectedStatus);
+  const filteredWorks =
+    statusFilter === "all"
+      ? works
+      : works.filter((w) => w.status === statusFilter);
 
-  const statusStyles: Record<Exclude<StatusFilter, "all">, string> = {
-    ongoing: "bg-[#fff8e9] text-[#8a6940] border-[#e4d2a7]",
-    planned: "bg-[#f3f4f6] text-[#4b5563] border-[#d1d5db]",
-    completed: "bg-[#edf3e8] text-[#24543b] border-[#b7d1b2]",
-  };
+  function getStatusBadgeStyle(status: string) {
+    switch (status) {
+      case "completed":
+        return "bg-emerald-100 text-emerald-800 border-emerald-200";
+      case "in_progress":
+        return "bg-amber-100 text-amber-800 border-amber-200";
+      case "approved":
+        return "bg-sky-100 text-sky-800 border-sky-200";
+      case "delayed":
+        return "bg-rose-100 text-rose-800 border-rose-200";
+      default:
+        return "bg-stone-100 text-stone-700 border-stone-200";
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[#f7f8f2] text-[#203b2d]">
-      {/* Top Header */}
-      <header className="sticky top-0 z-50 border-b border-[#e4d2a7] bg-[#fff8e9]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-4">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#245c3c] text-2xl">
+      {/* Top Bar */}
+      <header className="sticky top-0 z-40 border-b border-[#e4d2a7] bg-[#fff8e9]/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4">
+          <a href="/" className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#245c3c] text-xl">
               🌿
             </div>
             <div>
-              <p className="text-base font-bold tracking-tight sm:text-lg">
-                {t.siteName}
-              </p>
+              <p className="text-sm font-bold sm:text-base">{t.siteName}</p>
               <p className="text-xs text-[#718071]">{t.siteSubName}</p>
             </div>
-          </Link>
+          </a>
 
           <div className="flex items-center gap-2.5">
             <button
               type="button"
               onClick={() => setLanguage(language === "en" ? "te" : "en")}
-              aria-label="Switch language between English and Telugu"
-              className="rounded-full border border-[#d5b77d] bg-white/80 px-4 py-2 text-sm font-bold text-[#24543b] transition hover:bg-[#f5e8c9]"
+              className="rounded-full border border-[#d5b77d] bg-white/80 px-4 py-1.5 text-sm font-bold text-[#24543b] transition hover:bg-[#f5e8c9]"
             >
               {language === "en" ? "తెలుగు" : "English"}
             </button>
-
-            <Link
+            <a
               href="/"
-              className="rounded-full bg-[#245c3c] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#17462c]"
+              className="rounded-full bg-[#245c3c] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#17462c] sm:text-sm"
             >
               {t.backHome}
-            </Link>
+            </a>
           </div>
         </div>
       </header>
 
       {/* Hero Banner */}
-      <section className="bg-[#24543b] px-6 py-16 text-white md:py-20">
+      <section className="bg-[#24543b] px-6 py-14 text-[#fff8e9]">
         <div className="mx-auto max-w-7xl">
-          <span className="inline-block rounded-full border border-[#e8d6a6]/40 bg-[#e8d6a6]/10 px-4 py-1.5 text-sm text-[#f5e8c9]">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#edce83]">
             🏗️ {t.eyebrow}
-          </span>
-          <h1 className="mt-5 text-3xl font-bold leading-tight text-[#fff8e9] md:text-5xl">
-            {t.pageTitle}
-          </h1>
-          <p className="mt-4 max-w-2xl text-base leading-8 text-[#f0eadb]">
-            {t.pageSubtitle}
           </p>
-
-          {/* Summary Stat Cards */}
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {t.stats.map((stat) => (
-              <div
-                key={stat.label}
-                className="rounded-2xl border border-[#e8d6a6]/25 bg-white/10 p-5 backdrop-blur-sm"
-              >
-                <p className="text-3xl font-bold text-[#edce83]">{stat.value}</p>
-                <p className="mt-1 text-sm font-semibold text-[#fff8e9]">
-                  {stat.label}
-                </p>
-                <p className="mt-1 text-xs text-[#d6e4d4]">{stat.note}</p>
-              </div>
-            ))}
-          </div>
+          <h1 className="mt-3 text-3xl font-bold sm:text-5xl">{t.heading}</h1>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-[#f0eadb] sm:text-base">
+            {t.subtitle}
+          </p>
         </div>
       </section>
 
-      {/* Project Tracker Ledger */}
-      <section className="mx-auto max-w-7xl px-6 py-16">
-        <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#54865b]">
-          {t.trackerEyebrow}
-        </p>
-        <h2 className="mt-3 text-2xl font-bold md:text-3xl">
-          {t.trackerTitle}
-        </h2>
-
-        <div className="mt-4 rounded-2xl border border-[#e4d2a7] bg-[#fff8e9] px-5 py-3.5 text-sm leading-6 text-[#6b5c3e]">
-          ℹ️ {t.trackerNotice}
-        </div>
-
+      {/* Filters & Project Cards */}
+      <section className="mx-auto max-w-7xl px-6 py-10">
         {/* Status Filter Pills */}
-        <div className="mt-7 flex flex-wrap gap-2.5">
-          {t.filters.map((filter) => {
-            const active = selectedStatus === filter.key;
-            return (
-              <button
-                key={filter.key}
-                type="button"
-                onClick={() => setSelectedStatus(filter.key)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                  active
-                    ? "bg-[#245c3c] text-white shadow-sm"
-                    : "border border-[#d5dfd2] bg-white text-[#203b2d] hover:bg-[#edf3e8]"
-                }`}
-              >
-                {filter.label}
-              </button>
-            );
-          })}
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: "all", label: t.filterAll },
+            { id: "in_progress", label: t.filterInProgress },
+            { id: "completed", label: t.filterCompleted },
+            { id: "approved", label: t.filterApproved },
+            { id: "proposed", label: t.filterProposed },
+            { id: "delayed", label: t.filterDelayed },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setStatusFilter(tab.id)}
+              className={`rounded-full px-4 py-2 text-xs font-semibold transition sm:text-sm ${
+                statusFilter === tab.id
+                  ? "bg-[#245c3c] text-white shadow-sm"
+                  : "border border-[#d4ddd2] bg-white text-[#203b2d] hover:bg-[#edf3e8]"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Empty State or Project Cards */}
-        {filteredProjects.length === 0 ? (
-          <div className="mt-8 rounded-3xl border border-[#e4e9df] bg-white p-10 text-center shadow-sm">
-            <p className="text-4xl">🏗️</p>
-            <h3 className="mt-4 text-lg font-bold text-[#203b2d]">
-              {t.emptyTitle}
-            </h3>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-7 text-[#69776a]">
-              {t.emptyDesc}
-            </p>
+        {/* Content */}
+        {loading ? (
+          <div className="mt-10 rounded-3xl border border-[#e4e9df] bg-white p-12 text-center text-sm text-[#748174]">
+            {t.loadingText}
+          </div>
+        ) : filteredWorks.length === 0 ? (
+          <div className="mt-10 rounded-3xl border border-[#e4e9df] bg-white p-12 text-center text-sm text-[#748174]">
+            {t.emptyText}
           </div>
         ) : (
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-            {filteredProjects.map((project) => (
-              <article
-                key={project.id}
-                className="flex flex-col justify-between rounded-3xl border border-[#e4e9df] bg-white p-6 shadow-sm transition hover:border-[#a6c5a5]"
-              >
-                <div>
-                  <span
-                    className={`inline-block rounded-full border px-3 py-1 text-xs font-bold ${
-                      statusStyles[project.status]
-                    }`}
-                  >
-                    {t.statusLabels[project.status]}
-                  </span>
+          <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredWorks.map((work) => {
+              const title =
+                (language === "en" ? work.title_en : work.title_te) ||
+                work.title_en ||
+                work.title_te;
+              const location =
+                (language === "en" ? work.location_en : work.location_te) ||
+                work.location_en ||
+                work.location_te;
+              const summary =
+                (language === "en" ? work.summary_en : work.summary_te) ||
+                work.summary_en ||
+                work.summary_te;
+              const statusText =
+                t.statusLabels[work.status] || work.status.replace("_", " ");
 
-                  <p className="mt-4 text-xs font-semibold text-[#54865b]">
-                    {project.category}
-                  </p>
-                  <h3 className="mt-1.5 text-xl font-bold text-[#203b2d]">
-                    {project.title}
-                  </h3>
-                  <p className="mt-2.5 text-sm leading-7 text-[#69776a]">
-                    {project.description}
-                  </p>
-                </div>
+              return (
+                <article
+                  key={work.id}
+                  className="flex flex-col justify-between rounded-3xl border border-[#e4e9df] bg-white p-6 shadow-sm transition hover:border-[#a6c5a5] hover:shadow-md"
+                >
+                  <div>
+                    {/* Category & Status */}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="rounded-full bg-[#edf3e8] px-3 py-1 text-xs font-bold text-[#39744a]">
+                        {work.category}
+                      </span>
+                      <span
+                        className={`rounded-full border px-3 py-1 text-xs font-bold ${getStatusBadgeStyle(
+                          work.status
+                        )}`}
+                      >
+                        {statusText}
+                      </span>
+                    </div>
 
-                <div className="mt-6">
-                  <div className="flex items-center justify-between text-xs font-semibold">
-                    <span className="text-[#4c5b4e]">{t.progressLabel}</span>
-                    <span className="text-[#24543b]">{project.progress}%</span>
-                  </div>
-                  <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-[#edf3e8]">
-                    <div
-                      className="h-full rounded-full bg-[#245c3c] transition-all"
-                      style={{ width: `${project.progress}%` }}
-                    />
+                    {/* Title & Location */}
+                    <h2 className="mt-4 text-lg font-bold leading-snug text-[#203b2d]">
+                      {title}
+                    </h2>
+                    <p className="mt-1.5 text-xs font-medium text-[#54865b]">
+                      📍 {t.locationLabel}: {location}
+                    </p>
+
+                    {/* Summary */}
+                    <p className="mt-3 text-sm leading-6 text-[#69776a]">
+                      {summary}
+                    </p>
                   </div>
 
-                  <div className="mt-5 grid gap-2 border-t border-[#eef2ea] pt-4 text-xs text-[#69776a] sm:grid-cols-2">
-                    <p>
-                      <strong>{t.locationLabel}:</strong> {project.location}
-                    </p>
-                    <p>
-                      <strong>{t.timelineLabel}:</strong> {project.timeline}
-                    </p>
-                    <p className="sm:col-span-2">
-                      <strong>{t.fundingLabel}:</strong> {project.fundingSource}
-                    </p>
+                  {/* Progress & Budget Footer */}
+                  <div className="mt-6 border-t border-[#eef2ea] pt-4">
+                    <div className="flex items-center justify-between text-xs font-semibold">
+                      <span className="text-[#69776a]">{t.progressLabel}</span>
+                      <span className="text-[#24543b]">
+                        {work.progress_percent}%
+                      </span>
+                    </div>
+                    <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-[#edf3e8]">
+                      <div
+                        className="h-full rounded-full bg-[#245c3c] transition-all duration-500"
+                        style={{
+                          width: `${Math.min(
+                            100,
+                            Math.max(0, work.progress_percent)
+                          )}%`,
+                        }}
+                      />
+                    </div>
+
+                    {work.budget_text && (
+                      <p className="mt-3 text-xs text-[#748174]">
+                        💰 <span className="font-semibold">{t.budgetLabel}:</span>{" "}
+                        {work.budget_text}
+                      </p>
+                    )}
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         )}
       </section>
-
-      {/* Core Focus Areas */}
-      <section className="bg-[#edf3e8] py-16">
-        <div className="mx-auto max-w-7xl px-6">
-          <p className="text-sm font-bold uppercase tracking-[0.2em] text-[#54865b]">
-            {t.focusEyebrow}
-          </p>
-          <h2 className="mt-3 text-2xl font-bold md:text-3xl">{t.focusTitle}</h2>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#5e6e5f]">
-            {t.focusSubtitle}
-          </p>
-
-          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {t.focusAreas.map((area) => (
-              <div
-                key={area.icon + area.title}
-                className="rounded-2xl bg-white p-6 shadow-sm"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#edf3e8] text-2xl">
-                  {area.icon}
-                </div>
-                <h3 className="mt-4 text-lg font-bold">{area.title}</h3>
-                <p className="mt-2 text-sm leading-7 text-[#69776a]">
-                  {area.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-[#173f2b] px-6 py-10 text-white">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-7 md:flex-row">
-          <div>
-            <p className="text-xl font-bold">{t.siteName}</p>
-            <p className="mt-2 text-sm text-[#c6d7c4]">{t.siteSubName}</p>
-            <p className="mt-4 text-sm text-[#c6d7c4]">{t.footerTagline}</p>
-          </div>
-          <div className="text-sm leading-7 text-[#c6d7c4]">
-            <p>{t.footerNote1}</p>
-            <p>{t.footerNote2}</p>
-            <p className="mt-2">{t.footerCopyright}</p>
-          </div>
-        </div>
-      </footer>
     </main>
   );
 }

@@ -17,3 +17,33 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
 }
+
+.field {
+  width: 100%;
+  border: 1px solid #dce3d8;
+  border-radius: 10px;
+  padding: 11px 13px;
+  background: #fff;
+  color: #203b2d;
+  outline: none;
+}
+
+.field:focus {
+  border-color: #245c3c;
+  box-shadow: 0 0 0 2px rgba(36, 92, 60, 0.12);
+}
+
+.field {
+  width: 100%;
+  border: 1px solid #dce3d8;
+  border-radius: 10px;
+  padding: 11px 13px;
+  background: #fff;
+  color: #203b2d;
+  outline: none;
+}
+
+.field:focus {
+  border-color: #245c3c;
+  box-shadow: 0 0 0 2px rgba(36, 92, 60, 0.12);
+}

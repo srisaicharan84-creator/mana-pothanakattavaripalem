@@ -1,10 +1,152 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+
+interface Billboard {
+  id: string;
+  title_en: string;
+  title_te: string;
+  image_path: string;
+  placement: "main" | "supporting";
+  link_url?: string | null;
+  sort_order: number;
+}
+
+interface Announcement {
+  id: string;
+  category: string;
+  title_en: string;
+  title_te: string;
+  summary_en: string;
+  summary_te: string;
+  event_date: string | null;
+  published_at: string | null;
+}
+
+interface DevelopmentWork {
+  id: string;
+  category: string;
+  status: string;
+  title_en: string;
+  title_te: string;
+  location_en: string;
+  location_te: string;
+  summary_en: string;
+  summary_te: string;
+  progress_percent: number;
+}
+
+interface TransparencyRecord {
+  id: string;
+  category: string;
+  status: string;
+  record_date: string;
+  title_en: string;
+  title_te: string;
+  reference_id: string;
+}
 
 export default function Home() {
   const [language, setLanguage] = useState<"en" | "te">("en");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Billboard state
+  const [mainBillboards, setMainBillboards] = useState<Billboard[]>([]);
+  const [supportingBillboards, setSupportingBillboards] = useState<Billboard[]>([]);
+  const [currentMainIndex, setCurrentMainIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Announcements state
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+
+  // Development works state & fetch logic
+  const [developmentWorks, setDevelopmentWorks] = useState<DevelopmentWork[]>([]);
+
+  // Transparency records state & fetch logic
+  const [transparencyRecords, setTransparencyRecords] = useState<TransparencyRecord[]>([]);
+
+  useEffect(() => {
+    async function fetchDevelopmentWorks() {
+      const { data, error } = await supabase
+        .from("development_works")
+        .select(
+          "id, category, status, title_en, title_te, location_en, location_te, summary_en, summary_te, progress_percent"
+        )
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      if (!error && data) {
+        setDevelopmentWorks(data);
+      }
+    }
+    fetchDevelopmentWorks();
+  }, []);
+
+  useEffect(() => {
+    async function fetchTransparencyRecords() {
+      const { data, error } = await supabase
+        .from("transparency_records")
+        .select("id, category, status, record_date, title_en, title_te, reference_id")
+        .order("record_date", { ascending: false })
+        .limit(4);
+
+      if (!error && data) {
+        setTransparencyRecords(data);
+      }
+    }
+    fetchTransparencyRecords();
+  }, []);
+
+  // Fetch active billboards from Supabase
+  useEffect(() => {
+    async function fetchBillboards() {
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from("billboards")
+        .select("*")
+        .eq("is_active", true)
+        .or(`starts_at.is.null,starts_at.lte.${now}`)
+        .or(`expires_at.is.null,expires_at.gte.${now}`)
+        .order("sort_order", { ascending: true });
+
+      if (!error && data) {
+        const main = data.filter((b) => b.placement === "main");
+        const supporting = data.filter((b) => b.placement === "supporting");
+        setMainBillboards(main);
+        setSupportingBillboards(supporting);
+      }
+    }
+    fetchBillboards();
+  }, []);
+
+  // Fetch latest published announcements from Supabase
+  useEffect(() => {
+    async function fetchAnnouncements() {
+      const { data, error } = await supabase
+        .from("announcements")
+        .select(
+          "id, category, title_en, title_te, summary_en, summary_te, event_date, published_at"
+        )
+        .eq("status", "published")
+        .order("published_at", { ascending: false })
+        .limit(3);
+
+      if (!error && data) {
+        setAnnouncements(data);
+      }
+    }
+    fetchAnnouncements();
+  }, []);
+
+  // Main billboard automatic rotation
+  useEffect(() => {
+    if (mainBillboards.length <= 1 || isPaused) return;
+    const interval = setInterval(() => {
+      setCurrentMainIndex((prev) => (prev + 1) % mainBillboards.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [mainBillboards.length, isPaused]);
 
   const t =
     language === "en"
@@ -545,6 +687,129 @@ export default function Home() {
         </div>
       </section>
 
+      {/* --- HYBRID BILLBOARD DISPLAY SECTION --- */}
+      {(mainBillboards.length > 0 || supportingBillboards.length > 0) && (
+        <section className="mx-auto max-w-7xl px-6 py-12">
+          {/* Main Billboard Slideshow */}
+          {mainBillboards.length > 0 && (
+            <div
+              className="relative overflow-hidden rounded-3xl border border-[#e4d2a7] bg-[#24543b] shadow-xl"
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+            >
+              <div className="relative aspect-[16/7] w-full overflow-hidden bg-[#173f2b]">
+                {mainBillboards.map((board, index) => {
+                  const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/billboard-images/${board.image_path}`;
+                  const title = (language === "en" ? board.title_en : board.title_te) || board.title_en || board.title_te;
+
+                  const content = (
+                    <div className="relative h-full w-full">
+                      <img
+                        src={imageUrl}
+                        alt={title || "Village Billboard"}
+                        className="h-full w-full object-cover transition duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      {title && (
+                        <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+                          <span className="inline-block rounded-full bg-[#edce83] px-3 py-1 text-xs font-bold text-[#24452f]">
+                            {language === "en" ? "Village Billboard" : "గ్రామ బిల్ బోర్డ్"}
+                          </span>
+                          <h2 className="mt-2 text-xl font-bold text-white sm:text-3xl">
+                            {title}
+                          </h2>
+                        </div>
+                      )}
+                    </div>
+                  );
+
+                  return (
+                    <div
+                      key={board.id}
+                      className={`absolute inset-0 transition-opacity duration-1000 ${
+                        index === currentMainIndex ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                      }`}
+                    >
+                      {board.link_url ? (
+                        <a href={board.link_url} target="_blank" rel="noopener noreferrer" className="block h-full w-full">
+                          {content}
+                        </a>
+                      ) : (
+                        content
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Controls */}
+              {mainBillboards.length > 1 && (
+                <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2 bg-black/50 backdrop-blur rounded-full px-3 py-1.5 text-white">
+                  <button
+                    onClick={() => setCurrentMainIndex((prev) => (prev === 0 ? mainBillboards.length - 1 : prev - 1))}
+                    className="p-1 hover:text-[#edce83] transition"
+                    aria-label="Previous slide"
+                  >
+                    ‹
+                  </button>
+                  <span className="text-xs font-medium">
+                    {currentMainIndex + 1} / {mainBillboards.length}
+                  </span>
+                  <button
+                    onClick={() => setCurrentMainIndex((prev) => (prev + 1) % mainBillboards.length)}
+                    className="p-1 hover:text-[#edce83] transition"
+                    aria-label="Next slide"
+                  >
+                    ›
+                  </button>
+                  <button
+                    onClick={() => setIsPaused(!isPaused)}
+                    className="ml-2 text-xs bg-white/20 px-2 py-0.5 rounded hover:bg-white/30 transition"
+                  >
+                    {isPaused ? (language === "en" ? "Play" : "ప్లే") : (language === "en" ? "Pause" : "పాజ్")}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Supporting Billboards Cards */}
+          {supportingBillboards.length > 0 && (
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {supportingBillboards.map((board) => {
+                const imageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/billboard-images/${board.image_path}`;
+                const title = (language === "en" ? board.title_en : board.title_te) || board.title_en || board.title_te;
+
+                const cardContent = (
+                  <div className="overflow-hidden rounded-2xl border border-[#e4e9df] bg-white shadow-sm transition hover:border-[#d5b77d] hover:shadow-md">
+                    <div className="aspect-[5/3] w-full overflow-hidden bg-[#f0eadb]">
+                      <img
+                        src={imageUrl}
+                        alt={title || "Supporting Billboard"}
+                        className="h-full w-full object-cover transition hover:scale-105 duration-500"
+                      />
+                    </div>
+                    {title && (
+                      <div className="p-4">
+                        <h3 className="font-bold text-[#203b2d]">{title}</h3>
+                      </div>
+                    )}
+                  </div>
+                );
+
+                return board.link_url ? (
+                  <a key={board.id} href={board.link_url} target="_blank" rel="noopener noreferrer" className="block">
+                    {cardContent}
+                  </a>
+                ) : (
+                  <div key={board.id}>{cardContent}</div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
+
       {/* Introduction */}
       <section id="village" className="mx-auto max-w-7xl px-6 py-20">
         <div className="max-w-2xl">
@@ -596,23 +861,76 @@ export default function Home() {
             </a>
           </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {t.developmentItems.map((item) => (
-              <div
-                key={item.icon}
-                className="rounded-2xl border border-[#e4e9df] bg-[#f7f8f2] p-7"
-              >
-                <p className="text-4xl">{item.icon}</p>
-                <h3 className="mt-5 text-lg font-bold">{item.title}</h3>
-                <p className="mt-3 text-sm leading-7 text-[#748174]">
-                  {t.devCardText}
-                </p>
-                <span className="mt-5 inline-block rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#657565]">
-                  {t.devStatus}
-                </span>
-              </div>
-            ))}
-          </div>
+          {developmentWorks.length === 0 ? (
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              {t.developmentItems.map((item) => (
+                <div
+                  key={item.icon}
+                  className="rounded-2xl border border-[#e4e9df] bg-[#f7f8f2] p-7"
+                >
+                  <p className="text-4xl">{item.icon}</p>
+                  <h3 className="mt-5 text-lg font-bold">{item.title}</h3>
+                  <p className="mt-3 text-sm leading-7 text-[#748174]">
+                    {t.devCardText}
+                  </p>
+                  <span className="mt-5 inline-block rounded-full bg-white px-3 py-1.5 text-xs font-medium text-[#657565]">
+                    {t.devStatus}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-10 grid gap-5 md:grid-cols-3">
+              {developmentWorks.map((work) => {
+                const title =
+                  (language === "en" ? work.title_en : work.title_te) ||
+                  work.title_en ||
+                  work.title_te;
+                const location =
+                  (language === "en" ? work.location_en : work.location_te) ||
+                  work.location_en ||
+                  work.location_te;
+                const summary =
+                  (language === "en" ? work.summary_en : work.summary_te) ||
+                  work.summary_en ||
+                  work.summary_te;
+
+                return (
+                  <a
+                    key={work.id}
+                    href="/development"
+                    className="flex flex-col justify-between rounded-2xl border border-[#e4e9df] bg-[#f7f8f2] p-6 transition hover:border-[#a6c5a5] hover:shadow-md"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between gap-2 text-xs">
+                        <span className="font-bold uppercase text-[#54865b]">
+                          {work.category}
+                        </span>
+                        <span className="rounded-full bg-white px-2.5 py-1 font-bold text-[#24543b]">
+                          {work.progress_percent}%
+                        </span>
+                      </div>
+                      <h3 className="mt-3 text-lg font-bold text-[#203b2d]">
+                        {title}
+                      </h3>
+                      <p className="mt-1 text-xs text-[#748174]">📍 {location}</p>
+                      <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#69776a]">
+                        {summary}
+                      </p>
+                    </div>
+                    <div className="mt-5 h-2 w-full overflow-hidden rounded-full bg-white">
+                      <div
+                        className="h-full rounded-full bg-[#245c3c]"
+                        style={{
+                          width: `${Math.min(100, Math.max(0, work.progress_percent))}%`,
+                        }}
+                      />
+                    </div>
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
@@ -638,18 +956,44 @@ export default function Home() {
           <div className="rounded-3xl bg-white p-7 shadow-sm">
             <h3 className="text-xl font-bold">{t.recordsTitle}</h3>
             <div className="mt-6 space-y-4">
-              {t.recordsItems.map((record) => (
-                <div
-                  key={record.icon}
-                  className="flex items-center gap-4 rounded-xl bg-[#f7f8f2] p-4"
-                >
-                  <span className="text-2xl">{record.icon}</span>
-                  <span className="font-semibold">{record.title}</span>
-                  <span className="ml-auto text-xs text-[#8b9989]">
-                    {t.recordsComingSoon}
-                  </span>
-                </div>
-              ))}
+              {transparencyRecords.length === 0
+                ? t.recordsItems.map((record) => (
+                    <div
+                      key={record.icon}
+                      className="flex items-center gap-4 rounded-xl bg-[#f7f8f2] p-4"
+                    >
+                      <span className="text-2xl">{record.icon}</span>
+                      <span className="font-semibold">{record.title}</span>
+                      <span className="ml-auto text-xs text-[#8b9989]">
+                        {t.recordsComingSoon}
+                      </span>
+                    </div>
+                  ))
+                : transparencyRecords.map((rec) => {
+                    const title =
+                      (language === "en" ? rec.title_en : rec.title_te) ||
+                      rec.title_en ||
+                      rec.title_te;
+                    return (
+                      <a
+                        key={rec.id}
+                        href="/transparency"
+                        className="flex items-center justify-between gap-3 rounded-xl bg-[#f7f8f2] p-4 transition hover:bg-[#edf3e8]"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-[#203b2d]">
+                            {title}
+                          </p>
+                          <p className="mt-0.5 text-xs text-[#748174]">
+                            {rec.category} • {rec.reference_id}
+                          </p>
+                        </div>
+                        <span className="shrink-0 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-bold text-emerald-800">
+                          {rec.status}
+                        </span>
+                      </a>
+                    );
+                  })}
             </div>
             <p className="mt-5 text-xs leading-6 text-[#879287]">
               {t.recordsDisclaimer}
@@ -670,9 +1014,52 @@ export default function Home() {
               <p className="mt-4 leading-7 text-[#748174]">
                 {t.annDescription}
               </p>
-              <div className="mt-6 rounded-xl bg-[#f7f8f2] p-5 text-sm text-[#748174]">
-                {t.annEmpty}
-              </div>
+              
+              {announcements.length === 0 ? (
+                <div className="mt-6 rounded-xl bg-[#f7f8f2] p-5 text-sm text-[#748174]">
+                  {t.annEmpty}
+                </div>
+              ) : (
+                <div className="mt-6 space-y-3">
+                  {announcements.map((item) => {
+                    const title =
+                      (language === "en" ? item.title_en : item.title_te) ||
+                      item.title_en ||
+                      item.title_te;
+                    const summary =
+                      (language === "en" ? item.summary_en : item.summary_te) ||
+                      item.summary_en ||
+                      item.summary_te;
+
+                    return (
+                      <a
+                        key={item.id}
+                        href="/announcements"
+                        className="block rounded-xl border border-[#e4e9df] bg-[#f7f8f2] p-4 transition hover:border-[#a6c5a5] hover:bg-[#edf3e8]"
+                      >
+                        <div className="flex items-center justify-between gap-2 text-xs text-[#54865b]">
+                          <span className="font-bold uppercase tracking-wider">
+                            {item.category}
+                          </span>
+                          {item.event_date && (
+                            <span className="text-[#748174]">
+                              📅 {item.event_date}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="mt-1 font-bold text-[#203b2d]">
+                          {title}
+                        </h3>
+                        {summary && (
+                          <p className="mt-1 line-clamp-2 text-xs leading-5 text-[#69776a]">
+                            {summary}
+                          </p>
+                        )}
+                      </a>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <div className="mt-6">
               <a

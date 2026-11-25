@@ -40,29 +40,45 @@ export default function AdminPage() {
           title: "Admin Dashboard",
           welcome: "Welcome,",
           intro:
-            "From here, authorized administrators will manage the verified village records. The sections below will be built one by one.",
+            "From here, authorized administrators will manage the verified village records and display systems.",
+          activeLabel: "Active Manager",
           comingNext: "Coming next",
           signOutBtn: "Sign Out",
           sections: [
             {
+              icon: "🖼️",
+              name: "Billboard Management",
+              text: "Upload, order and manage main and supporting image billboards.",
+              href: "/admin/billboards",
+              active: true,
+            },
+            {
               icon: "📢",
               name: "Announcements",
               text: "Add and edit village announcements and events.",
+              href: "/admin/announcements",
+              active: true,
             },
             {
               icon: "🏗️",
               name: "Development Works",
               text: "Manage roads, drainage, water and other projects.",
+              href: "/admin/development",
+              active: true,
             },
             {
               icon: "📒",
               name: "Transparency Records",
               text: "Manage income, expenditure and verification status.",
+              href: "/admin/transparency",
+              active: true,
             },
             {
               icon: "💬",
               name: "Community Reports",
               text: "Review and moderate issues reported by residents.",
+              href: "/admin/community",
+              active: true,
             },
           ],
           footerTagline: "Our Village. Our Information. Our Community.",
@@ -84,29 +100,45 @@ export default function AdminPage() {
           title: "అడ్మిన్ డ్యాష్‌బోర్డ్",
           welcome: "స్వాగతం,",
           intro:
-            "ఇక్కడినుండి అధికారం పొందిన అడ్మిన్‌లు ధృవీకరించిన గ్రామ రికార్డులను నిర్వహిస్తారు. క్రింది విభాగాలను ఒక్కొక్కటిగా నిర్మిస్తాము.",
+            "ఇక్కడినుండి అధికారం పొందిన అడ్మిన్‌లు ధృవీకరించిన గ్రామ రికార్డులను మరియు డిస్‌ప్లే సిస్టమ్‌లను నిర్వహిస్తారు.",
+          activeLabel: "యాక్టివ్ మేనేజర్",
           comingNext: "త్వరలో",
           signOutBtn: "లాగ్ అవుట్ (Sign Out)",
           sections: [
             {
+              icon: "🖼️",
+              name: "బిల్ బోర్డ్ నిర్వహణ",
+              text: "ప్రధాన మరియు సపోర్టింగ్ ఇమేజ్ బిల్ బోర్డ్‌లను అప్‌లోడ్ చేసి నిర్వహించండి.",
+              href: "/admin/billboards",
+              active: true,
+            },
+            {
               icon: "📢",
               name: "ప్రకటనలు",
               text: "గ్రామ ప్రకటనలు, కార్యక్రమాలను చేర్చండి, సవరించండి.",
+              href: "/admin/announcements",
+              active: true,
             },
             {
               icon: "🏗️",
               name: "అభివృద్ధి పనులు",
               text: "రోడ్లు, డ్రైనేజీ, నీరు ఇతర పనులను నిర్వహించండి.",
+              href: "/admin/development",
+              active: true,
             },
             {
               icon: "📒",
               name: "పారదర్శకత రికార్డులు",
               text: "ఆదాయం, ఖర్చు, ధృవీకరణ స్థితిని నిర్వహించండి.",
+              href: "/admin/transparency",
+              active: true,
             },
             {
               icon: "💬",
               name: "సమాజ నివేదికలు",
               text: "గ్రామస్థులు తెలిపిన సమస్యలను సమీక్షించండి.",
+              href: "/admin/community",
+              active: true,
             },
           ],
           footerTagline: "మన గ్రామం. మన సమాచారం. మన సమాజం.",
@@ -221,23 +253,36 @@ export default function AdminPage() {
 
           <section className="mx-auto max-w-5xl px-6 py-12">
             <div className="grid gap-5 sm:grid-cols-2">
-              {t.sections.map((section) => (
-                <div
-                  key={section.name}
-                  className="rounded-3xl border border-[#e4e9df] bg-white p-6 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <span className="text-3xl">{section.icon}</span>
-                    <span className="rounded-full bg-[#fff8e9] px-3 py-1 text-xs font-bold text-[#8a6d2f]">
-                      {t.comingNext}
-                    </span>
+              {t.sections.map((section) => {
+                const cardContent = (
+                  <div className="h-full rounded-3xl border border-[#e4e9df] bg-white p-6 shadow-sm transition hover:border-[#d5b77d] hover:shadow-md">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="text-3xl">{section.icon}</span>
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-bold ${
+                          section.active
+                            ? "bg-[#245c3c]/10 text-[#245c3c]"
+                            : "bg-[#fff8e9] text-[#8a6d2f]"
+                        }`}
+                      >
+                        {section.active ? t.activeLabel : t.comingNext}
+                      </span>
+                    </div>
+                    <h2 className="mt-3 text-lg font-bold">{section.name}</h2>
+                    <p className="mt-1 text-sm leading-6 text-[#69776a]">
+                      {section.text}
+                    </p>
                   </div>
-                  <h2 className="mt-3 text-lg font-bold">{section.name}</h2>
-                  <p className="mt-1 text-sm leading-6 text-[#69776a]">
-                    {section.text}
-                  </p>
-                </div>
-              ))}
+                );
+
+                return section.active ? (
+                  <Link key={section.name} href={section.href} className="block">
+                    {cardContent}
+                  </Link>
+                ) : (
+                  <div key={section.name}>{cardContent}</div>
+                );
+              })}
             </div>
 
             <button
