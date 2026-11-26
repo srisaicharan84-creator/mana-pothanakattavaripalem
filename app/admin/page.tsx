@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 import {
   getCurrentUserProfile,
   supabase,
@@ -25,8 +26,6 @@ export default function AdminPage() {
   const t =
     language === "en"
       ? {
-          siteName: "Mana Pothanakattavaripalem",
-          siteSubName: "మన పొతనకట్టవారిపాలెం",
           checking: "Checking your access...",
           notSignedTitle: "Please sign in first",
           notSignedText:
@@ -60,6 +59,13 @@ export default function AdminPage() {
               active: true,
             },
             {
+              icon: "💌",
+              name: "Village Invitations",
+              text: "Review, approve, or remove photo, video, and text event invitations.",
+              href: "/admin/invitations",
+              active: true,
+            },
+            {
               icon: "🏗️",
               name: "Development Works",
               text: "Manage roads, drainage, water and other projects.",
@@ -76,7 +82,7 @@ export default function AdminPage() {
             {
               icon: "💬",
               name: "Community Reports",
-              text: "Review and moderate issues reported by residents.",
+              text: "Review and moderate issues (including anonymous submissions).",
               href: "/admin/community",
               active: true,
             },
@@ -85,8 +91,6 @@ export default function AdminPage() {
           footerCopyright: "© 2026 Mana Pothanakattavaripalem",
         }
       : {
-          siteName: "మన పొతనకట్టవారిపాలెం",
-          siteSubName: "Mana Pothanakattavaripalem",
           checking: "మీ అనుమతిని తనిఖీ చేస్తున్నాము...",
           notSignedTitle: "దయచేసి ముందు లాగిన్ అవ్వండి",
           notSignedText:
@@ -120,6 +124,13 @@ export default function AdminPage() {
               active: true,
             },
             {
+              icon: "💌",
+              name: "గ్రామ ఆహ్వానాలు",
+              text: "ఫోటో, వీడియో మరియు సందేశ ఆహ్వానాలను పరిశీలించి ఆమోదించండి.",
+              href: "/admin/invitations",
+              active: true,
+            },
+            {
               icon: "🏗️",
               name: "అభివృద్ధి పనులు",
               text: "రోడ్లు, డ్రైనేజీ, నీరు ఇతర పనులను నిర్వహించండి.",
@@ -136,7 +147,7 @@ export default function AdminPage() {
             {
               icon: "💬",
               name: "సమాజ నివేదికలు",
-              text: "గ్రామస్థులు తెలిపిన సమస్యలను సమీక్షించండి.",
+              text: "గ్రామస్థులు తెలిపిన సమస్యలను (అజ్ఞాత నివేదికలతో సహా) సమీక్షించండి.",
               href: "/admin/community",
               active: true,
             },
@@ -152,39 +163,7 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen bg-[#f7f8f2] text-[#203b2d]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-[#e4d2a7] bg-[#fff8e9]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-4">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#245c3c] text-2xl">
-              🌿
-            </div>
-            <div>
-              <p className="text-base font-bold tracking-tight sm:text-lg">
-                {t.siteName}
-              </p>
-              <p className="text-xs text-[#718071]">{t.siteSubName}</p>
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setLanguage(language === "en" ? "te" : "en")}
-              className="rounded-full border border-[#d5b77d] bg-white/80 px-4 py-2 text-sm font-bold text-[#24543b] transition hover:bg-[#f5e8c9]"
-            >
-              {language === "en" ? "తెలుగు" : "English"}
-            </button>
-
-            <Link
-              href="/"
-              className="rounded-full bg-[#245c3c] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#17462c]"
-            >
-              {t.backHome}
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navbar language={language} setLanguage={setLanguage} showBackHome />
 
       {/* 1. Still checking */}
       {checking && (

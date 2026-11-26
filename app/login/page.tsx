@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
 import {
   getCurrentUserProfile,
   supabase,
@@ -9,6 +11,7 @@ import {
 } from "../../lib/supabase";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [language, setLanguage] = useState<"en" | "te">("en");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
 
@@ -34,13 +37,10 @@ export default function LoginPage() {
   const t =
     language === "en"
       ? {
-          siteName: "Mana Pothanakattavaripalem",
-          siteSubName: "మన పొతనకట్టవారిపాలెం",
-          backHome: "← Back to Home",
           eyebrow: "Resident & Admin Portal",
           pageTitle: "Village Account Access",
           pageSubtitle:
-            "Sign in as a resident to report village issues or share ideas, or sign in with an authorized Administrator account to manage verified village records.",
+            "Sign in as a resident to explore the village portal with your Citizen badge and report issues, or sign in as an Administrator to manage verified records.",
 
           signInTab: "Sign In",
           signUpTab: "New Resident Sign Up",
@@ -61,9 +61,9 @@ export default function LoginPage() {
 
           loggedInAs: "Signed In Account",
           adminRoleBadge: "🛡️ Village Administrator",
-          citizenRoleBadge: "🏡 Verified Resident",
+          citizenRoleBadge: "🏡 Verified Citizen",
+          exploreHomeBtn: "Explore Village Home →",
           adminPanelBtn: "Open Admin Dashboard →",
-          communityBtn: "Go to Community & Issues →",
           signOutBtn: "Sign Out",
 
           signupSuccess:
@@ -72,13 +72,10 @@ export default function LoginPage() {
           footerCopyright: "© 2026 Mana Pothanakattavaripalem",
         }
       : {
-          siteName: "మన పొతనకట్టవారిపాలెం",
-          siteSubName: "Mana Pothanakattavaripalem",
-          backHome: "← హోమ్ పేజీకి తిరిగి వెళ్ళండి",
           eyebrow: "గ్రామస్థులు & నిర్వాహకుల లాగిన్",
           pageTitle: "గ్రామ ఖాతా ప్రవేశం",
           pageSubtitle:
-            "గ్రామ సమస్యలను తెలియజేయడానికి గ్రామస్థులుగా లాగిన్ అవ్వండి, లేదా ధృవీకరించబడిన గ్రామ రికార్డులను నిర్వహించడానికి అడ్మిన్ ఖాతాతో ప్రవేశించండి.",
+            "మీ పౌర గుర్తింపుతో గ్రామ వెబ్‌సైట్‌ను చూడటానికి మరియు సమస్యలను తెలియజేయడానికి లాగిన్ అవ్వండి, లేదా అడ్మిన్ ఖాతాతో రికార్డులను నిర్వహించండి.",
 
           signInTab: "లాగిన్ (Sign In)",
           signUpTab: "కొత్త గ్రామస్థుల నమోదు",
@@ -99,9 +96,9 @@ export default function LoginPage() {
 
           loggedInAs: "లాగిన్ అయిన ఖాతా",
           adminRoleBadge: "🛡️ గ్రామ అడ్మినిస్ట్రేటర్",
-          citizenRoleBadge: "🏡 నమోదైన గ్రామస్థుడు",
+          citizenRoleBadge: "🏡 నమోదైన పౌరుడు (Citizen)",
+          exploreHomeBtn: "గ్రామ హోమ్ పేజీకి వెళ్ళండి →",
           adminPanelBtn: "అడ్మిన్ డ్యాష్‌బోర్డ్ తెరవండి →",
-          communityBtn: "సమాజం & సమస్యల విభాగానికి వెళ్ళండి →",
           signOutBtn: "లాగ్ అవుట్ (Sign Out)",
 
           signupSuccess:
@@ -124,8 +121,9 @@ export default function LoginPage() {
         });
         if (error) throw error;
 
-        const current = await getCurrentUserProfile();
-        setProfile(current);
+        // Redirect directly to unified Home Page with Citizen/Admin badge in header
+        router.push("/");
+        router.refresh();
       } else {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -139,8 +137,8 @@ export default function LoginPage() {
         if (error) throw error;
 
         if (data.session) {
-          const current = await getCurrentUserProfile();
-          setProfile(current);
+          router.push("/");
+          router.refresh();
         } else {
           setSuccessMsg(t.signupSuccess);
           setMode("signin");
@@ -160,43 +158,12 @@ export default function LoginPage() {
     setProfile(null);
     setSuccessMsg("");
     setErrorMsg("");
+    router.refresh();
   }
 
   return (
     <main className="min-h-screen bg-[#f7f8f2] text-[#203b2d]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-[#e4d2a7] bg-[#fff8e9]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-4">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#245c3c] text-2xl">
-              🌿
-            </div>
-            <div>
-              <p className="text-base font-bold tracking-tight sm:text-lg">
-                {t.siteName}
-              </p>
-              <p className="text-xs text-[#718071]">{t.siteSubName}</p>
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setLanguage(language === "en" ? "te" : "en")}
-              className="rounded-full border border-[#d5b77d] bg-white/80 px-4 py-2 text-sm font-bold text-[#24543b] transition hover:bg-[#f5e8c9]"
-            >
-              {language === "en" ? "తెలుగు" : "English"}
-            </button>
-
-            <Link
-              href="/"
-              className="rounded-full bg-[#245c3c] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#17462c]"
-            >
-              {t.backHome}
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navbar language={language} setLanguage={setLanguage} showBackHome />
 
       {/* Banner */}
       <section className="bg-[#24543b] px-6 py-14 text-white">
@@ -245,21 +212,21 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-3">
+                <Link
+                  href="/"
+                  className="block w-full rounded-xl bg-[#245c3c] px-5 py-3.5 text-center text-sm font-bold text-white transition hover:bg-[#17462c]"
+                >
+                  {t.exploreHomeBtn}
+                </Link>
+
                 {profile.role === "admin" && (
                   <Link
                     href="/admin"
-                    className="block w-full rounded-xl bg-[#245c3c] px-5 py-3.5 text-center text-sm font-bold text-white transition hover:bg-[#17462c]"
+                    className="block w-full rounded-xl border border-[#245c3c] bg-white px-5 py-3.5 text-center text-sm font-bold text-[#245c3c] transition hover:bg-[#edf3e8]"
                   >
                     {t.adminPanelBtn}
                   </Link>
                 )}
-
-                <Link
-                  href="/community"
-                  className="block w-full rounded-xl border border-[#245c3c] bg-white px-5 py-3.5 text-center text-sm font-bold text-[#245c3c] transition hover:bg-[#edf3e8]"
-                >
-                  {t.communityBtn}
-                </Link>
 
                 <button
                   type="button"

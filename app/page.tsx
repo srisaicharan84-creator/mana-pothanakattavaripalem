@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import Navbar from "@/components/Navbar";
 
 interface Billboard {
   id: string;
@@ -49,7 +50,6 @@ interface TransparencyRecord {
 
 export default function Home() {
   const [language, setLanguage] = useState<"en" | "te">("en");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Billboard state
   const [mainBillboards, setMainBillboards] = useState<Billboard[]>([]);
@@ -153,15 +153,6 @@ export default function Home() {
       ? {
           siteName: "Mana Pothanakattavaripalem",
           siteSubName: "మన పొతనకట్టవారిపాలెం",
-          village: "Village",
-          development: "Development",
-          transparency: "Transparency",
-          announcements: "Announcements",
-          community: "Community",
-          getInvolved: "Get Involved",
-          signIn: "Sign In / Admin",
-          menuLabel: "Menu",
-          closeLabel: "Close",
           welcome: "Welcome to our village",
           heroTitleLine1: "Mana Village.",
           heroTitleLine2: "Mana Heritage.",
@@ -202,15 +193,15 @@ export default function Home() {
               href: "/announcements",
             },
             {
+              icon: "💌",
+              title: "Village Invitations",
+              subtitle: "Weddings, festivals & family events",
+              href: "/invitations",
+            },
+            {
               icon: "💬",
               title: "Community",
               subtitle: "Ideas and discussions",
-              href: "/community",
-            },
-            {
-              icon: "📝",
-              title: "Report an Issue",
-              subtitle: "Share a village concern",
               href: "/community",
             },
           ],
@@ -268,15 +259,6 @@ export default function Home() {
       : {
           siteName: "మన పొతనకట్టవారిపాలెం",
           siteSubName: "Mana Pothanakattavaripalem",
-          village: "గ్రామం",
-          development: "అభివృద్ధి",
-          transparency: "పారదర్శకత",
-          announcements: "ప్రకటనలు",
-          community: "సమాజం",
-          getInvolved: "పాల్గొనండి",
-          signIn: "లాగిన్ / అడ్మిన్",
-          menuLabel: "మెనూ",
-          closeLabel: "మూసివేయండి",
           welcome: "మన గ్రామానికి స్వాగతం",
           heroTitleLine1: "మన గ్రామం.",
           heroTitleLine2: "మన వారసత్వం.",
@@ -317,15 +299,15 @@ export default function Home() {
               href: "/announcements",
             },
             {
+              icon: "💌",
+              title: "గ్రామ ఆహ్వానాలు",
+              subtitle: "వివాహాలు, పండుగలు & శుభకార్యాలు",
+              href: "/invitations",
+            },
+            {
               icon: "💬",
               title: "సమాజ వేదిక",
               subtitle: "సలహాలు మరియు చర్చలు",
-              href: "/community",
-            },
-            {
-              icon: "📝",
-              title: "సమస్యను తెలియజేయండి",
-              subtitle: "గ్రామ సమస్యలను మా దృష్టికి తీసుకురండి",
               href: "/community",
             },
           ],
@@ -382,113 +364,10 @@ export default function Home() {
           footerCopyright: "© 2026 మన పొతనకట్టవారిపాలెం",
         };
 
-  const navLinks = [
-    { href: "#village", label: t.village },
-    { href: "#development", label: t.development },
-    { href: "#transparency", label: t.transparency },
-    { href: "#announcements", label: t.announcements },
-    { href: "#community", label: t.community },
-  ];
-
   return (
     <main className="min-h-screen bg-[#f7f8f2] text-[#203b2d]">
-      {/* Navigation */}
-      <header className="sticky top-0 z-50 border-b border-[#e4d2a7] bg-[#fff8e9]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-4">
-          <a href="#" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#245c3c] text-2xl">
-              🌿
-            </div>
-            <div>
-              <p className="text-base font-bold tracking-tight sm:text-lg">
-                {t.siteName}
-              </p>
-              <p className="text-xs text-[#718071]">{t.siteSubName}</p>
-            </div>
-          </a>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden items-center gap-7 text-sm font-medium lg:flex">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="transition hover:text-[#398451]"
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Actions: Language Toggle + Sign In + CTA + Mobile Menu Button */}
-          <div className="flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setLanguage(language === "en" ? "te" : "en")}
-              aria-label="Switch language between English and Telugu"
-              className="rounded-full border border-[#d5b77d] bg-white/80 px-4 py-2 text-sm font-bold text-[#24543b] transition hover:bg-[#f5e8c9]"
-            >
-              {language === "en" ? "తెలుగు" : "English"}
-            </button>
-
-            <a
-              href="/login"
-              className="hidden rounded-full border border-[#245c3c] bg-white/80 px-5 py-2.5 text-sm font-semibold text-[#245c3c] transition hover:bg-[#edf3e8] sm:inline-block"
-            >
-              🔐 {t.signIn}
-            </a>
-
-            <a
-              href="/community"
-              className="hidden rounded-full bg-[#245c3c] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#17462c] sm:inline-block"
-            >
-              {t.getInvolved}
-            </a>
-
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-expanded={mobileMenuOpen}
-              aria-label="Toggle navigation menu"
-              className="rounded-full border border-[#d5b77d] px-3.5 py-2 text-sm font-semibold text-[#24543b] transition hover:bg-[#f5e8c9] lg:hidden"
-            >
-              {mobileMenuOpen ? `✕ ${t.closeLabel}` : `☰ ${t.menuLabel}`}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Dropdown Navigation */}
-        {mobileMenuOpen && (
-          <nav className="border-t border-[#e4d2a7] bg-[#fff8e9] px-5 py-4 lg:hidden">
-            <div className="flex flex-col space-y-3 text-sm font-medium">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-lg px-3 py-2 transition hover:bg-[#f5e8c9] hover:text-[#24543b]"
-                >
-                  {link.label}
-                </a>
-              ))}
-              <a
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="mt-2 rounded-full border border-[#245c3c] px-5 py-2.5 text-center font-semibold text-[#245c3c] transition hover:bg-[#edf3e8] sm:hidden"
-              >
-                🔐 {t.signIn}
-              </a>
-              <a
-                href="/community"
-                onClick={() => setMobileMenuOpen(false)}
-                className="rounded-full bg-[#245c3c] px-5 py-2.5 text-center font-semibold text-white transition hover:bg-[#17462c] sm:hidden"
-              >
-                {t.getInvolved}
-              </a>
-            </div>
-          </nav>
-        )}
-      </header>
+      {/* Shared Navbar */}
+      <Navbar language={language} setLanguage={setLanguage} />
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-[#24543b]">
@@ -1090,6 +969,35 @@ export default function Home() {
               {t.commCta}
             </a>
           </div>
+        </div>
+      </section>
+
+      {/* Village Invitations Highlight Banner */}
+      <section className="mx-auto mb-12 max-w-7xl px-6">
+        <div className="flex flex-col items-start justify-between gap-6 rounded-3xl border-2 border-[#e4d2a7] bg-[#fff8e9] p-8 shadow-xs md:flex-row md:items-center">
+          <div className="max-w-2xl">
+            <span className="inline-block rounded-full bg-[#edce83] px-3.5 py-1 text-xs font-bold text-[#24452f]">
+              💌 {language === "en" ? "Village Celebrations" : "గ్రామ శుభకార్యాలు"}
+            </span>
+            <h2 className="mt-3 text-2xl font-bold text-[#203b2d] md:text-3xl">
+              {language === "en"
+                ? "Village Invitations Board"
+                : "గ్రామ ఆహ్వాన వేదిక"}
+            </h2>
+            <p className="mt-2 text-sm leading-7 text-[#5d4f32] md:text-base">
+              {language === "en"
+                ? "Invite the village to weddings, housewarmings, temple festivals, and family gatherings with photo cards, videos, or text invitations."
+                : "వివాహాలు, గృహప్రవేశాలు, ఆలయ ఉత్సవాలు మరియు కుటుంబ వేడుకలకు ఫోటో కార్డులు, వీడియోలు లేదా సందేశాల ద్వారా గ్రామస్థులను ఆహ్వానించండి."}
+            </p>
+          </div>
+          <a
+            href="/invitations"
+            className="shrink-0 rounded-full bg-[#24543b] px-7 py-3.5 text-sm font-bold text-[#fff8e9] transition hover:bg-[#173f2b]"
+          >
+            {language === "en"
+              ? "View & Post Invitations →"
+              : "ఆహ్వానాలు చూడండి & పంపండి →"}
+          </a>
         </div>
       </section>
 

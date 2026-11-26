@@ -16,6 +16,7 @@ interface CommunityReport {
   status: string;
   admin_response: string | null;
   is_public: boolean;
+  is_anonymous?: boolean;
   created_at: string;
 }
 
@@ -142,6 +143,7 @@ export default function AdminCommunityPage() {
           deleteBtn: "Delete",
           emptyText: "No community reports found for this filter.",
           contactLabel: "Contact (Private):",
+          anonymousBadge: "🕵️ Anonymous Submission",
         }
       : {
           backDashboard: "← అడ్మిన్ డ్యాష్‌బోర్డ్‌కి తిరిగి వెళ్ళండి",
@@ -159,6 +161,7 @@ export default function AdminCommunityPage() {
           deleteBtn: "తొలగించు",
           emptyText: "ఈ విభాగంలో నివేదికలు లేవు.",
           contactLabel: "సంప్రదింపు (ప్రైవేట్):",
+          anonymousBadge: "🕵️ అజ్ఞాత నివేదిక",
         };
 
   if (checking) {
@@ -273,8 +276,13 @@ export default function AdminCommunityPage() {
                         {rep.category}
                       </span>
                       <span className="text-[#879287]">
-                        • {new Date(rep.created_at).toLocaleDateString()}
+                        - {new Date(rep.created_at).toLocaleDateString()}
                       </span>
+                      {rep.is_anonymous && (
+                        <span className="rounded-full border border-[#e4d2a7] bg-[#fff8e9] px-2.5 py-0.5 text-[11px] font-bold text-[#7c5c26]">
+                          {t.anonymousBadge}
+                        </span>
+                      )}
                     </div>
 
                     <span className="text-xs text-[#69776a]">
