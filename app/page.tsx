@@ -292,6 +292,14 @@ export default function Home() {
           templeDescription:
             "A dedicated space for future temple updates, daily photographs, calendar and virtual darshan.",
           templeBadge: "Coming in a future phase",
+          supportEyebrow: "Need Help or Facing an Issue?",
+          supportHeading: "Portal Support & Creator Contact",
+          supportDescription:
+            "Facing any technical issue, login trouble, or want to share feedback about the portal? Reach out directly.",
+          creatorLabel: "Created & Maintained by",
+          creatorName: "Charan Sri Sai Yenumula",
+          whatsappBtn: "WhatsApp: +91 79818 59752",
+          emailBtn: "srisaicharan84@gmail.com",
           footerTagline: "Our Village. Our Information. Our Community.",
           footerNote1: "Independent community information initiative.",
           footerNote2: "Not an official Gram Panchayat website.",
@@ -404,6 +412,14 @@ export default function Home() {
           templeDescription:
             "భవిష్యత్తులో దేవాలయ విశేషాలు, రోజువారీ దర్శన చిత్రాలు, పండుగల క్యాలెండర్ మరియు వర్చువల్ దర్శనం కోసం ప్రత్యేకంగా కేటాయించిన వేదిక.",
           templeBadge: "తదుపరి దశలో ప్రారంభమవుతుంది",
+          supportEyebrow: "సహాయం కావాలా లేదా ఏదైనా సమస్య ఎదుర్కొంటున్నారా?",
+          supportHeading: "పోర్టల్ సహాయం & రూపకర్త సంప్రదింపు వివరాలు",
+          supportDescription:
+            "వెబ్‌సైట్ ఉపయోగించడంలో ఏదైనా సాంకేతిక సమస్య ఎదురైనా లేదా సలహాలు ఇవ్వాలన్నా నేరుగా సంప్రదించండి.",
+          creatorLabel: "రూపకల్పన & నిర్వహణ",
+          creatorName: "చరణ్ శ్రీ సాయి యెనుముల (Charan Sri Sai Yenumula)",
+          whatsappBtn: "వాట్సాప్: +91 79818 59752",
+          emailBtn: "srisaicharan84@gmail.com",
           footerTagline: "మన గ్రామం. మన సమాచారం. మన సమాజం.",
           footerNote1: "స్వతంత్ర గ్రామ సమాచార వేదిక.",
           footerNote2: "ఇది అధికారిక గ్రామ పంచాయతీ వెబ్‌సైట్ కాదు.",
@@ -1126,11 +1142,11 @@ export default function Home() {
       </section>
 
       {/* Future temple space */}
-      <section className="mx-auto mb-20 max-w-7xl px-6">
+      <section className="mx-auto mb-16 max-w-7xl px-6">
         <div className="rounded-3xl border border-[#e5e9d9] bg-[#f0eddf] py-12 text-center">
           <div className="mx-auto max-w-2xl px-5">
             <p className="text-4xl">🛕</p>
-            <p className="mt-4 text-sm font-bold uppercase tracking-[0.2em] text-[#8a7951]">
+            <p className="mt-4 text-sm font-bold uppercase tracking-[0.2em] to-[#8a7951]">
               {t.templeEyebrow}
             </p>
             <h2 className="mt-3 text-2xl font-bold">{t.templeHeading}</h2>
@@ -1140,6 +1156,47 @@ export default function Home() {
             <span className="mt-5 inline-block rounded-full bg-white px-5 py-2 text-sm font-medium text-[#857954]">
               {t.templeBadge}
             </span>
+          </div>
+        </div>
+      </section>
+
+      {/* Creator & Support Contact Box */}
+      <section className="mx-auto mb-16 max-w-7xl px-6">
+        <div className="flex flex-col justify-between gap-6 rounded-3xl border-2 border-[#e4d2a7] bg-[#fff8e9] p-7 shadow-xs md:flex-row md:items-center">
+          <div className="max-w-xl">
+            <span className="inline-block rounded-full bg-[#edce83] px-3.5 py-1 text-xs font-bold text-[#24452f]">
+              🛠️ {t.supportEyebrow}
+            </span>
+            <h2 className="mt-3 text-xl font-bold text-[#203b2d] md:text-2xl">
+              {t.supportHeading}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-[#5d4f32]">
+              {t.supportDescription}
+            </p>
+            <p className="mt-3 text-sm font-semibold text-[#24543b]">
+              {t.creatorLabel}:{" "}
+              <span className="font-bold text-[#173f2b]">{t.creatorName}</span>
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row md:flex-col lg:flex-row">
+            <a
+              href="https://wa.me/917981859752?text=Hello%20Charan%2C%20I%20need%20help%20with%20the%20Mana%20Pothanakattavaripalem%20portal."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 rounded-full bg-[#24543b] px-5 py-3 text-xs font-bold text-[#fff8e9] transition hover:bg-[#173f2b]"
+            >
+              <span>💬</span>
+              <span>{t.whatsappBtn}</span>
+            </a>
+
+            <a
+              href="mailto:srisaicharan84@gmail.com?subject=Mana%20Pothanakattavaripalem%20Portal%20Support"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-[#24543b]/30 bg-white px-5 py-3 text-xs font-bold text-[#203b2d] transition hover:border-[#24543b] hover:bg-[#edf3e8]"
+            >
+              <span>✉️</span>
+              <span>{t.emailBtn}</span>
+            </a>
           </div>
         </div>
       </section>
