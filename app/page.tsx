@@ -14,6 +14,22 @@ interface Billboard {
   sort_order: number;
 }
 
+interface VillageInvitation {
+  id: string;
+  host_name: string;
+  event_type: string;
+  title_en: string;
+  title_te: string | null;
+  message_en: string;
+  message_te: string | null;
+  event_date: string | null;
+  venue: string | null;
+  media_type: "none" | "photo" | "video";
+  media_path: string | null;
+  status: string;
+  created_at: string;
+}
+
 interface Announcement {
   id: string;
   category: string;
@@ -56,6 +72,9 @@ export default function Home() {
   const [supportingBillboards, setSupportingBillboards] = useState<Billboard[]>([]);
   const [currentMainIndex, setCurrentMainIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+
+  // Village Invitations state
+  const [publishedInvitations, setPublishedInvitations] = useState<VillageInvitation[]>([]);
 
   // Announcements state
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -118,6 +137,23 @@ export default function Home() {
       }
     }
     fetchBillboards();
+  }, []);
+
+  // Fetch latest published village invitations from Supabase
+  useEffect(() => {
+    async function fetchInvitations() {
+      const { data, error } = await supabase
+        .from("village_invitations")
+        .select("*")
+        .eq("status", "published")
+        .order("created_at", { ascending: false })
+        .limit(3);
+
+      if (!error && data) {
+        setPublishedInvitations(data);
+      }
+    }
+    fetchInvitations();
   }, []);
 
   // Fetch latest published announcements from Supabase
@@ -205,6 +241,11 @@ export default function Home() {
               href: "/community",
             },
           ],
+          invitationsHeading: "Upcoming Village Invitations & Celebrations",
+          invitationsSub: "Join our neighbors in their family weddings, housewarmings, and festive milestones.",
+          allInvitationsBtn: "View All Invitations →",
+          noInvitations: "No active public invitations published right now.",
+          postInvitationCta: "Post Your Family Invitation →",
           devEyebrow: "Building together",
           devHeading: "Village Development",
           devSubtitle: "Follow village works, project details and progress.",
@@ -311,6 +352,11 @@ export default function Home() {
               href: "/community",
             },
           ],
+          invitationsHeading: "రాబోయే గ్రామ శుభకార్యాలు & ఆహ్వానాలు",
+          invitationsSub: "మన ఇళ్లలో జరిగే వివాహాలు, గృహప్రవేశాలు మరియు వేడుకలలో అందరూ పాలుపంచుకోండి.",
+          allInvitationsBtn: "అన్ని ఆహ్వానాలు చూడండి →",
+          noInvitations: "ప్రస్తుతం ప్రజా ఆహ్వానాలు ఏవీ అందుబాటులో లేవు.",
+          postInvitationCta: "మీ కుటుంబ ఆహ్వానాన్ని పంపండి →",
           devEyebrow: "కలిసి నిర్మిద్దాం",
           devHeading: "గ్రామ అభివృద్ధి",
           devSubtitle:
@@ -689,6 +735,113 @@ export default function Home() {
         </section>
       )}
 
+      {/* --- VILLAGE INVITATIONS SECTION (PLACED DIRECTLY BELOW BILLBOARDS) --- */}
+      <section className="mx-auto max-w-7xl px-6 pb-12">
+        <div className="rounded-3xl border border-[#e4d2a7] bg-[#fff8e9] p-8 shadow-xs">
+          <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
+            <div>
+              <span className="inline-block rounded-full bg-[#edce83] px-3.5 py-1 text-xs font-bold text-[#24452f]">
+                💌 {language === "en" ? "Village Celebrations" : "గ్రామ శుభకార్యాలు"}
+              </span>
+              <h2 className="mt-3 text-2xl font-bold text-[#203b2d] md:text-3xl">
+                {t.invitationsHeading}
+              </h2>
+              <p className="mt-1 text-sm text-[#69776a]">
+                {t.invitationsSub}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <a
+                href="/invitations"
+                className="rounded-full bg-[#edce83] px-5 py-2.5 text-xs font-bold text-[#243b2d] hover:bg-[#e5be64]"
+              >
+                {t.postInvitationCta}
+              </a>
+              <a
+                href="/invitations"
+                className="rounded-full bg-[#24543b] px-5 py-2.5 text-xs font-bold text-white hover:bg-[#173f2b]"
+              >
+                {t.allInvitationsBtn}
+              </a>
+            </div>
+          </div>
+
+          {/* Published Invitations Grid */}
+          <div className="mt-8">
+            {publishedInvitations.length === 0 ? (
+              <div className="rounded-2xl border border-[#e4e9df] bg-white p-8 text-center text-sm text-[#69776a]">
+                {t.noInvitations}
+              </div>
+            ) : (
+              <div className="grid gap-6 md:grid-cols-3">
+                {publishedInvitations.map((inv) => {
+                  const title = (language === "en" ? inv.title_en : (inv.title_te || inv.title_en)) || inv.title_en;
+                  const message = (language === "en" ? inv.message_en : (inv.message_te || inv.message_en)) || inv.message_en;
+                  const mediaUrl = inv.media_path
+                    ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/invitations/${inv.media_path}`
+                    : null;
+
+                  return (
+                    <div
+                      key={inv.id}
+                      className="flex flex-col justify-between rounded-2xl border border-[#e4e9df] bg-white p-6 shadow-xs transition hover:border-[#d5b77d] hover:shadow-md"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 text-xs">
+                          <span className="rounded-full bg-[#245c3c]/10 px-3 py-1 font-bold text-[#245c3c]">
+                            {inv.event_type}
+                          </span>
+                          {inv.event_date && (
+                            <span className="text-[#69776a]">📅 {inv.event_date}</span>
+                          )}
+                        </div>
+
+                        <h3 className="mt-3 text-lg font-bold text-[#203b2d]">
+                          {title}
+                        </h3>
+                        <p className="mt-1 text-xs font-semibold text-[#54865b]">
+                          Host: {inv.host_name} {inv.venue ? `• 📍 ${inv.venue}` : ""}
+                        </p>
+
+                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#69776a]">
+                          {message}
+                        </p>
+
+                        {mediaUrl && inv.media_type === "photo" && (
+                          <div className="mt-4 overflow-hidden rounded-xl border border-[#e4e9df] bg-[#fff8e9]">
+                            <img
+                              src={mediaUrl}
+                              alt={title}
+                              className="h-40 w-full object-cover"
+                            />
+                          </div>
+                        )}
+
+                        {mediaUrl && inv.media_type === "video" && (
+                          <div className="mt-4 overflow-hidden rounded-xl bg-black">
+                            <video src={mediaUrl} controls className="h-40 w-full" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="mt-6 pt-3 border-t border-[#f0eadb]">
+                        <a
+                          href="/invitations"
+                          className="text-xs font-bold text-[#245c3c] hover:underline"
+                        >
+                          {language === "en" ? "View Full Invitation →" : "పూర్తి ఆహ్వానం చూడండి →"}
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* Introduction */}
       <section id="village" className="mx-auto max-w-7xl px-6 py-20">
         <div className="max-w-2xl">
@@ -969,35 +1122,6 @@ export default function Home() {
               {t.commCta}
             </a>
           </div>
-        </div>
-      </section>
-
-      {/* Village Invitations Highlight Banner */}
-      <section className="mx-auto mb-12 max-w-7xl px-6">
-        <div className="flex flex-col items-start justify-between gap-6 rounded-3xl border-2 border-[#e4d2a7] bg-[#fff8e9] p-8 shadow-xs md:flex-row md:items-center">
-          <div className="max-w-2xl">
-            <span className="inline-block rounded-full bg-[#edce83] px-3.5 py-1 text-xs font-bold text-[#24452f]">
-              💌 {language === "en" ? "Village Celebrations" : "గ్రామ శుభకార్యాలు"}
-            </span>
-            <h2 className="mt-3 text-2xl font-bold text-[#203b2d] md:text-3xl">
-              {language === "en"
-                ? "Village Invitations Board"
-                : "గ్రామ ఆహ్వాన వేదిక"}
-            </h2>
-            <p className="mt-2 text-sm leading-7 text-[#5d4f32] md:text-base">
-              {language === "en"
-                ? "Invite the village to weddings, housewarmings, temple festivals, and family gatherings with photo cards, videos, or text invitations."
-                : "వివాహాలు, గృహప్రవేశాలు, ఆలయ ఉత్సవాలు మరియు కుటుంబ వేడుకలకు ఫోటో కార్డులు, వీడియోలు లేదా సందేశాల ద్వారా గ్రామస్థులను ఆహ్వానించండి."}
-            </p>
-          </div>
-          <a
-            href="/invitations"
-            className="shrink-0 rounded-full bg-[#24543b] px-7 py-3.5 text-sm font-bold text-[#fff8e9] transition hover:bg-[#173f2b]"
-          >
-            {language === "en"
-              ? "View & Post Invitations →"
-              : "ఆహ్వానాలు చూడండి & పంపండి →"}
-          </a>
         </div>
       </section>
 
